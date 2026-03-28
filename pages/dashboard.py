@@ -144,7 +144,10 @@ def update_dashboard(data_json, kpis_json, suppliers, item_types, skus):
         df = df[df["item_type"].isin(item_types)]
     if skus:
         df = df[df["sku"].isin(skus)]
-        kpis = kpis[kpis["sku"].isin(skus)]
+
+    # Filter KPIs to match the filtered data so cards/charts stay consistent
+    filtered_skus = df["sku"].unique()
+    kpis = kpis[kpis["sku"].isin(filtered_skus)]
 
     # KPI cards
     cards = [

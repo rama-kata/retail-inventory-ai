@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 import pandas as pd
 
 REQUIRED_COLUMNS = [
@@ -36,7 +38,12 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def load_csv(path: str = DEFAULT_CSV) -> pd.DataFrame:
+@lru_cache(maxsize=4)
+def _load_csv_cached(path: str) -> pd.DataFrame:
     df = pd.read_csv(path)
     validate_schema(df)
     return clean_data(df)
+
+
+def load_csv(path: str = DEFAULT_CSV) -> pd.DataFrame:
+    return _load_csv_cached(path).copy()

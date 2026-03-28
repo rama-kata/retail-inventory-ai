@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, callback, Input, Output, dash_table
+from dash import html, dcc, callback, Input, Output, State, dash_table
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
@@ -96,7 +96,7 @@ def update_classification(percentile):
 @callback(
     Output("export-csv", "data"),
     Input("export-btn", "n_clicks"),
-    Input("threshold-slider", "value"),
+    State("threshold-slider", "value"),
     prevent_initial_call=True,
 )
 def export_slow_movers(n_clicks, percentile):
