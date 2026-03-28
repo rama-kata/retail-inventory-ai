@@ -13,13 +13,21 @@ app = dash.Dash(
     suppress_callback_exceptions=True,
 )
 
-# Pre-build the FAISS index on startup (deduplicate to unique SKUs for speed)
-_df = load_csv()
-_df_unique = _df.groupby("sku").agg({
-    "description": "first", "item_type": "first",
-    "supplier": "first", "total_sales": "sum",
-}).reset_index()
-_index, _docs = build_index(_df_unique)
+# Lazy FAISS index — built on first chat, not on startup
+_index = None
+_docs = None
+
+
+def _get_index():
+    global _index, _docs
+    if _index is None:
+        df = load_csv()
+        df_unique = df.groupby("sku").agg({
+            "description": "first", "item_type": "first",
+            "supplier": "first", "total_sales": "sum",
+        }).reset_index()
+        _index, _docs = build_index(df_unique)
+    return _index, _docs
 
 chat_sidebar = dbc.Offcanvas(
     [
@@ -101,7 +109,8 @@ def handle_chat(send_clicks, s1_clicks, s2_clicks, user_input, history):
         return dash.no_update, dash.no_update, ""
 
     # RAG: retrieve + query
-    relevant = retrieve(question, _index, _docs, top_k=10)
+    index, docs = _get_index()
+    relevant = retrieve(question, index, docs, top_k=10)
     context = format_context(relevant)
     answer = query_ollama(question, context)
 
