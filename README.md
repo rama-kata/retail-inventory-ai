@@ -70,7 +70,7 @@ An interactive multi-page dashboard built with Plotly Dash:
 ### Setup
 
 ```bash
-git clone https://github.com/riiny-riiny/retail-inventory-ai.git
+git clone https://github.com/rama-kata/retail-inventory-ai.git
 cd retail-inventory-ai
 
 pip install -r requirements.txt
