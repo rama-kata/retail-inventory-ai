@@ -13,9 +13,13 @@ app = dash.Dash(
     suppress_callback_exceptions=True,
 )
 
-# Pre-build the FAISS index on startup
+# Pre-build the FAISS index on startup (deduplicate to unique SKUs for speed)
 _df = load_csv()
-_index, _docs = build_index(_df)
+_df_unique = _df.groupby("sku").agg({
+    "description": "first", "item_type": "first",
+    "supplier": "first", "total_sales": "sum",
+}).reset_index()
+_index, _docs = build_index(_df_unique)
 
 chat_sidebar = dbc.Offcanvas(
     [
