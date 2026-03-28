@@ -1,5 +1,9 @@
+from unittest.mock import patch, Mock
+
 import pandas as pd
-from pipeline.rag import build_index, retrieve, format_context
+import requests
+
+from pipeline.rag import build_index, retrieve, format_context, query_ollama
 
 
 def make_test_df():
@@ -36,3 +40,25 @@ def test_format_context_produces_string():
     context = format_context(docs)
     assert isinstance(context, str)
     assert "Patron" in context
+
+
+@patch("pipeline.rag.requests.post")
+def test_query_ollama_parses_response(mock_post):
+    mock_response = Mock()
+    mock_response.json.return_value = {"response": "SKU1 needs reorder."}
+    mock_response.raise_for_status = Mock()
+    mock_post.return_value = mock_response
+
+    answer = query_ollama("Which SKU needs reorder?", "- SKU1: low stock")
+    assert answer == "SKU1 needs reorder."
+    # Verify the prompt includes the question and context
+    call_args = mock_post.call_args
+    prompt = call_args[1]["json"]["prompt"]
+    assert "Which SKU needs reorder?" in prompt
+    assert "SKU1: low stock" in prompt
+
+
+@patch("pipeline.rag.requests.post", side_effect=requests.exceptions.ConnectionError)
+def test_query_ollama_handles_connection_error(mock_post):
+    answer = query_ollama("test question", "test context")
+    assert "Ollama is not running" in answer

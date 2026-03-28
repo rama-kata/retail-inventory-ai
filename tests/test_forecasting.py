@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from pipeline.forecasting import forecast_sku
+from pipeline.forecasting import forecast_sku, get_forecastable_skus
 
 
 def make_sku_series():
@@ -43,3 +43,17 @@ def test_forecast_rejects_insufficient_data():
     })
     result = forecast_sku(df, "SKU1")
     assert result is None
+
+
+def test_get_forecastable_skus_filters_by_min_data_points():
+    df = make_sku_series()  # SKU1 with 36 rows
+    short_df = pd.DataFrame({
+        "date": [pd.Timestamp("2020-01-01")],
+        "sku": ["SKU_SHORT"], "total_sales": [10.0],
+        "supplier": ["X"], "description": ["X"], "item_type": ["X"],
+        "retail_sales": [5.0], "wh_sales": [5.0], "retail_transfers": [0.0],
+    })
+    combined = pd.concat([df, short_df], ignore_index=True)
+    skus = get_forecastable_skus(combined)
+    assert "SKU1" in skus
+    assert "SKU_SHORT" not in skus

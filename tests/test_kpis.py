@@ -41,3 +41,17 @@ def test_compute_kpis_row_count():
     df = make_test_data()
     kpis = compute_kpis(df)
     assert len(kpis) == 2  # SKU1 and SKU2
+
+
+def test_compute_kpis_turnover_is_meaningful():
+    """turnover_rate should differ between SKUs with different sales/inventory ratios."""
+    df = make_test_data()
+    kpis = compute_kpis(df)
+    sku1 = kpis[kpis["sku"] == "SKU1"].iloc[0]
+    sku2 = kpis[kpis["sku"] == "SKU2"].iloc[0]
+    # Both have constant wh_sales, so turnover = total_sales_sum / avg_wh_sales.
+    # SKU1: 1800 / 50 = 36.0, SKU2: 84 / 2 = 42.0
+    assert sku1["turnover_rate"] == 36.0
+    assert sku2["turnover_rate"] == 42.0
+    # Crucially, turnover is NOT just the count of rows (12 for both)
+    assert sku1["turnover_rate"] != 12.0
