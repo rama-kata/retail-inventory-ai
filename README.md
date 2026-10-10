@@ -1,6 +1,6 @@
 # retail-inventory-ai
 
-A step-by-step portfolio project demonstrating how to optimize retail inventory management by combining traditional analytics, machine learning forecasting, transformer fine-tuning, and a Retrieval-Augmented Generation (RAG) Q&A system.
+A step-by-step portfolio project demonstrating how to optimize retail inventory management by combining traditional analytics, machine learning forecasting, and a Retrieval-Augmented Generation (RAG) Q&A system.
 
 ## Project Description
 
