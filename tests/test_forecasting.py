@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from pipeline.forecasting import forecast_sku, get_forecastable_skus
+from pipeline.forecasting import forecast_next, forecast_sku, get_forecastable_skus
 
 
 def make_sku_series():
@@ -57,3 +57,16 @@ def test_get_forecastable_skus_filters_by_min_data_points():
     skus = get_forecastable_skus(combined)
     assert "SKU1" in skus
     assert "SKU_SHORT" not in skus
+
+
+def test_forecast_next_predicts_future_months():
+    df = make_sku_series()
+    result = forecast_next(df, "SKU1", horizon=3)
+    assert len(result["predicted"]) == 3
+    assert all(p >= 0 for p in result["predicted"])
+    assert result["dates"][0] == pd.Timestamp("2021-01-01")
+
+
+def test_forecast_next_rejects_insufficient_data():
+    df = make_sku_series().head(5)
+    assert forecast_next(df, "SKU1") is None
